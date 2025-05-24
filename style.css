@@ -1,0 +1,351 @@
+/* Стили, вдохновленные moex.com (светлая тема) */
+body {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    background-color: #F8F9FA; /* Основной фон страницы - очень светлый */
+    color: #212529;
+    line-height: 1.6;
+    font-size: 16px;
+    border-top: 3px solid #343A40; /* Темно-серый цвет */
+}
+
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+header {
+    background-color: #eff0f3;
+    padding: 12px 0;
+    margin-bottom: 25px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+}
+
+/* --- Логотип MOEX --- */
+.logo-moex-shape {
+    width: 58px;
+    height: 34px;
+    background-color: #E6332A; /* MOEX Red */
+    position: relative;
+    margin-right: 8px;
+    clip-path: polygon(
+        0% 33%, 33% 33%, 33% 0%, 100% 0%, 100% 100%, 0% 100%
+    );
+}
+
+.moex-logo-text {
+    color: white;
+    font-family: 'Roboto', 'Arial', sans-serif;
+    font-weight: 900;
+    font-size: 1.2em;
+    line-height: 0.9;
+    letter-spacing: -0.8px;
+    text-transform: uppercase;
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+.logo-conference-text {
+    font-size: 0.5em;
+    line-height: 1.1;
+    color: #E6332A;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.page-title-area {
+    position: relative;
+    padding-bottom: 8px;
+}
+
+.page-title-area h1 {
+    font-size: 1.2em;
+    font-weight: 700;
+    text-align: right;
+    margin: 0;
+    color: #000000;
+    padding-bottom: 5px;
+}
+
+.page-title-area::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #E6332A;
+}
+
+
+main {
+    padding-bottom: 20px;
+}
+
+.card {
+    background-color: #FFFFFF;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 0px;
+    box-shadow: none;
+    border: none;
+}
+
+h2 {
+    color: #343A40;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.4em;
+    font-weight: 500;
+    border-bottom: 1px solid #DEE2E6;
+    padding-bottom: 10px;
+}
+
+/* --- Стили для Аккордеона рисков --- */
+.risk-accordions {
+    margin-top: 20px;
+}
+
+.risk-item {
+    border-bottom: 1px solid #E9ECEF;
+}
+.risk-item:last-child {
+    border-bottom: none;
+}
+
+.risk-item summary {
+    padding: 15px 0;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    list-style: none; /* Убираем стандартный маркер details */
+    display: flex;
+    align-items: center;
+    transition: color 0.3s ease; /* Плавное изменение цвета текста */
+    position: relative; /* Для ::before псевдоэлемента, если он будет */
+}
+
+.risk-item summary::-webkit-details-marker { /* Убираем стандартный маркер для Chrome/Safari */
+    display: none;
+}
+.risk-item summary::marker { /* Убираем стандартный маркер для Firefox */
+    display: none;
+}
+
+.accordion-icon {
+    font-size: 1.1em;
+    margin-right: 12px;
+    color: #555;
+    font-weight: normal;
+    width: 1em;
+    text-align: center;
+    transition: transform 0.3s ease, color 0.3s ease; /* Плавный поворот иконки и цвет */
+}
+
+.risk-item .minus { display: none; }
+.risk-item[open] .plus { display: none; }
+.risk-item[open] .minus { display: inline; }
+
+/* Стили для открытого состояния */
+.risk-item[open] summary {
+    color: #E6332A; /* Красный цвет текста для активного заголовка */
+}
+.risk-item[open] summary .accordion-icon.plus,
+.risk-item[open] summary .accordion-icon.minus { /* Если нужны разные иконки */
+    color: #E6332A;
+    /* transform: rotate(45deg); /* Пример поворота для плюса в крестик */
+}
+
+
+.risk-description {
+    /* Начальное состояние для анимации */
+    max-height: 0;
+    overflow: hidden;
+    padding-top: 0; /* Убираем верхний padding, когда скрыто */
+    padding-bottom: 0; /* Убираем нижний padding, когда скрыто */
+    opacity: 0;
+    transition: max-height 0.4s ease-out, padding-top 0.4s ease-out, padding-bottom 0.4s ease-out, opacity 0.3s 0.1s ease-out;
+    /* Добавляем отступ слева, как и раньше */
+    padding-left: 28px;
+    color: #555;
+    font-size: 0.95em;
+    line-height: 1.7;
+}
+
+.risk-item[open] .risk-description {
+    /* Конечное состояние для анимации */
+    max-height: 500px; /* Достаточно большая высота для любого контента */
+    padding-top: 5px;   /* Возвращаем верхний padding */
+    padding-bottom: 15px; /* Возвращаем нижний padding */
+    opacity: 1;
+    transition: max-height 0.5s ease-in, padding-top 0.5s ease-in, padding-bottom 0.5s ease-in, opacity 0.3s ease-in;
+}
+
+
+.control-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.control-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #495057;
+    font-weight: 500;
+    font-size: 0.95em;
+}
+
+select, input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #CED4DA;
+    border-radius: 4px;
+    background-color: #FFFFFF;
+    color: #495057;
+    font-size: 1em;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease-in-out;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23495057' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1em 1em;
+    padding-right: 2.5rem;
+}
+
+select:focus, input[type="number"]:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: none;
+}
+
+
+button#plot-button {
+    background-color: #E6332A;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.05em;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+button#plot-button:hover {
+    background-color: #c22a22;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+canvas#ftpChart {
+    background-color: #FFFFFF;
+}
+
+footer {
+    background-color: #343A40;
+    color: #ADB5BD;
+    text-align: center;
+    padding: 25px 0;
+    margin-top: 30px;
+    font-size: 0.9em;
+}
+footer p {
+    margin: 0;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    body {
+        font-size: 15px;
+        border-top-width: 2px;
+    }
+    header {
+        padding: 10px 0;
+    }
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .logo-area {
+        margin-bottom: 10px;
+        justify-content: center;
+    }
+    .page-title-area {
+        text-align: center;
+        padding-bottom: 6px;
+    }
+    .page-title-area h1 {
+        font-size: 1.1em;
+        text-align: center;
+        padding-bottom: 4px;
+    }
+    .page-title-area::after {
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40%;
+        height: 2px;
+    }
+    .container {
+        width: 95%;
+    }
+    .card {
+        padding: 20px;
+    }
+    .control-grid {
+        grid-template-columns: 1fr;
+    }
+    button#plot-button {
+        width: 100%;
+        font-size: 1em;
+    }
+    .chart-container {
+        height: 300px;
+    }
+    .logo-moex-shape {
+        width: 52px;
+        height: 30px;
+        margin-right: 6px;
+    }
+    .moex-logo-text {
+        font-size: 1.1em;
+        bottom: 1px;
+        letter-spacing: -0.5px;
+    }
+    .logo-conference-text {
+        font-size: 0.45em;
+    }
+    footer {
+        padding: 20px 0;
+        font-size: 0.85em;
+    }
+}

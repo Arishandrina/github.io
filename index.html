@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Построение FTP кривой - Конференция MOEX</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo-area">
+                <div class="logo-moex-shape">
+                    <span class="moex-logo-text">MOEX</span>
+                </div>
+                <span class="logo-conference-text">
+                    КОНФЕРЕНЦИЯ<br>
+                    МОСКОВСКАЯ БИРЖА
+                </span>
+            </div>
+            <div class="page-title-area">
+                <h1>Построение FTP кривой</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="ftp-info" class="card">
+            <h2>Что такое FTP кривая?</h2>
+            <p>
+                FTP (Fund Transfer Pricing) кривая — это инструмент внутреннего ценообразования фондирования в финансовых организациях.
+                Она помогает определить стоимость привлечения и размещения ресурсов для различных подразделений и продуктов.
+                Ключевые компоненты при построении FTP кривой:
+            </p>
+            <div class="risk-accordions">
+                <details class="risk-item">
+                    <summary>
+                        <span class="accordion-icon plus">+</span>
+                        <span class="accordion-icon minus">−</span>
+                        Безрисковая ставка
+                    </summary>
+                    <div class="risk-description">
+                        Базовая ставка, привязанная к ОФЗ. Это основа, от которой отсчитываются остальные премии за риск
+                    </div>
+                </details>
+                <details class="risk-item">
+                    <summary>
+                        <span class="accordion-icon plus">+</span>
+                        <span class="accordion-icon minus">−</span>
+                        Кредитный спред
+                    </summary>
+                    <div class="risk-description">
+                        Надбавка за кредитный риск самого эмитента (или его аналогов при отсутствии собственных торгуемых обязательств). Отражает вероятность дефолта и добавляется к безрисковой ставке. Для организаций, не имеющих собственных торгующихся облигаций (как, например, НКЦ), определение кредитного спреда может основываться на анализе облигаций компаний-аналогов с похожим кредитным рейтингом или на спредах зарубежных аналогов к их гособлигациям
+                    </div>
+                </details>
+                <details class="risk-item">
+                    <summary>
+                        <span class="accordion-icon plus">+</span>
+                        <span class="accordion-icon minus">−</span>
+                        Риск ликвидности
+                    </summary>
+                    <div class="risk-description">
+                        Премия за риск, связанный с возможностью быстрой конвертации актива в денежные средства без значительных потерь, или стоимостью поддержания необходимого уровня ликвидности в соответствии с регуляторными требованиями. Эта премия компенсирует потенциальные издержки или упущенную выгоду, связанные с управлением ликвидностью
+                    </div>
+                </details>
+                 <!-- Процентный риск УДАЛЕН -->
+            </div>
+        </section>
+
+        <section id="controls" class="card">
+            <h2>Параметры построения</h2>
+            <div class="control-grid">
+                <div class="control-group">
+                    <label for="maturity">Срочность (лет):</label>
+                    <select id="maturity">
+                        <option value="1">1 год</option>
+                        <option value="2">2 года</option>
+                        <option value="3">3 года</option>
+                        <option value="5">5 лет</option>
+                        <option value="7">7 лет</option>
+                        <option value="10">10 лет</option>
+                        <option value="15">15 лет</option>
+                        <option value="20">20 лет</option>
+                        <option value="30" selected>30 лет</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="security-type">Вид ценных бумаг:</label>
+                    <select id="security-type">
+                        <option value="ofz">ОФЗ</option>
+                        <option value="domrf" selected>Облигации ДОМ.РФ</option>
+                        <option value="corporate">Корпоративные (AAA)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="risk-premium">Премия за риск ликвидности (%):</label>
+                    <input type="number" id="risk-premium" value="0.5" step="0.1" min="0" max="5">
+                </div>
+            </div>
+            <button id="plot-button">Построить кривую</button>
+        </section>
+
+        <section id="chart-section" class="card">
+            <h2>График FTP кривой</h2>
+            <div class="chart-container">
+                <canvas id="ftpChart"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2024 Конференция Московская Биржа</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
