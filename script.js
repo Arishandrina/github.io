@@ -1,50 +1,72 @@
 document.addEventListener('DOMContentLoaded', () => {
     const maturitySelect = document.getElementById('maturity');
     const securityTypeSelect = document.getElementById('security-type');
-    const riskPremiumInput = document.getElementById('risk-premium');
     const plotButton = document.getElementById('plot-button');
     const ctx = document.getElementById('ftpChart').getContext('2d');
 
     let ftpChart;
 
+    // KBD Yield Data (Безрисковая ставка)
     const kbdYieldData = [
-        { term: 0.25, yield: 20.54 }, { term: 0.50, yield: 19.66 },
-        { term: 0.75, yield: 18.95 }, { term: 1.00, yield: 18.36 },
-        { term: 2.00, yield: 16.86 }, { term: 3.00, yield: 16.18 },
-        { term: 5.00, yield: 15.78 }, { term: 7.00, yield: 15.75 },
-        { term: 10.00, yield: 15.77 }, { term: 15.00, yield: 15.75 },
-        { term: 20.00, yield: 15.73 }, { term: 30.00, yield: 15.73 }
+        { term: 0.25, yield: 20.07 }, { term: 0.50, yield: 19.02 },
+        { term: 0.75, yield: 18.24 }, { term: 1.00, yield: 17.65},
+        { term: 2.00, yield: 16.43 }, { term: 3.00, yield: 16.00 },
+        { term: 5.00, yield: 15.77 }, { term: 7.00, yield: 15.73 },
+        { term: 10.00, yield: 15.71 }, { term: 15.00, yield: 15.64 },
+        { term: 20.00, yield: 15.59 }, { term: 30.00, yield: 15.56 }
     ];
     kbdYieldData.sort((a, b) => a.term - b.term);
 
-    function interpolateYield(targetTerm) {
-        if (kbdYieldData.length === 0) return null;
-        if (targetTerm <= kbdYieldData[0].term) return kbdYieldData[0].yield;
-        if (targetTerm >= kbdYieldData[kbdYieldData.length - 1].term) return kbdYieldData[kbdYieldData.length - 1].yield;
+    // Credit Spread Data (based on term)
+    const creditSpreadTermData = [
+        { term: 0.25, spread: 1.15 }, { term: 0.50, spread: 2.04 },
+        { term: 0.75, spread: 3.27 }, { term: 1.00, spread: 3.42 },
+        { term: 2.00, spread: 2.42 }, { term: 3.00, spread: 3.14 },
+        { term: 5.00, spread: 3.16 }, { term: 7.00, spread: 3.36 },
+        { term: 10.00, spread: 3.32 }, { term: 15.00, spread: 3.85 },
+        { term: 20.00, spread: 4.06 }, { term: 30.00, spread: 3.35 }
+    ];
+    creditSpreadTermData.sort((a, b) => a.term - b.term);
+
+    const securityTypeDiscounts = {
+        'subfed_municipal_A_minus': 0.15,
+        'veb_domrf': 0.15,
+        'icb_domrf_guarantee': 0.20,
+        'corp_A_minus': 0.20,
+        'subfed_municipal_BBB': 0.30,
+        'corp_BBB': 0.30
+    };
+
+    function interpolateValueFromTermData(targetTerm, termDataArray, valueKey) {
+        if (termDataArray.length === 0) return null;
+        // If targetTerm is at or before the first known term, use the first term's value
+        if (targetTerm <= termDataArray[0].term) return termDataArray[0][valueKey];
+        // If targetTerm is at or after the last known term, use the last term's value
+        if (targetTerm >= termDataArray[termDataArray.length - 1].term) return termDataArray[termDataArray.length - 1][valueKey];
+
         let lowerBound = null, upperBound = null;
-        for (let i = 0; i < kbdYieldData.length; i++) {
-            if (kbdYieldData[i].term === targetTerm) return kbdYieldData[i].yield;
-            if (kbdYieldData[i].term < targetTerm) lowerBound = kbdYieldData[i];
-            if (kbdYieldData[i].term > targetTerm && lowerBound) {
-                upperBound = kbdYieldData[i]; break;
+        for (let i = 0; i < termDataArray.length; i++) {
+            if (termDataArray[i].term === targetTerm) return termDataArray[i][valueKey]; // Exact match
+            if (termDataArray[i].term < targetTerm) {
+                lowerBound = termDataArray[i];
+            }
+            if (termDataArray[i].term > targetTerm && lowerBound) {
+                upperBound = termDataArray[i];
+                break; // Found bracketing points
             }
         }
         if (lowerBound && upperBound) {
-            const x1 = lowerBound.term, y1 = lowerBound.yield, x2 = upperBound.term, y2 = upperBound.yield;
+            const x1 = lowerBound.term, y1 = lowerBound[valueKey];
+            const x2 = upperBound.term, y2 = upperBound[valueKey];
             return y1 + (targetTerm - x1) * (y2 - y1) / (x2 - x1);
         }
-        return null;
+        return null; // Should ideally not be reached if data covers the range
     }
 
     function generateChartData() {
-        const selectedMaxTerm = parseInt(maturitySelect.value);
+        const xAxisFixedMaxTerm = 30;
         const selectedSecurityType = securityTypeSelect.value;
-        const liquidityRiskPremiumValue = parseFloat(riskPremiumInput.value) || 0;
-
-        let fixedCreditSpreadValue = 0;
-        if (selectedSecurityType === 'ofz') fixedCreditSpreadValue = 0.1;
-        else if (selectedSecurityType === 'domrf') fixedCreditSpreadValue = 3.75; // Используем ваши новые значения
-        else if (selectedSecurityType === 'corporate') fixedCreditSpreadValue = 4.25; // Используем ваши новые значения
+        const discountRate = securityTypeDiscounts[selectedSecurityType] || 0;
 
         const labels = [];
         const baseYieldDataPoints = [];
@@ -52,48 +74,58 @@ document.addEventListener('DOMContentLoaded', () => {
         const liquidityPremiumMagnitudePoints = [];
 
         let termsToPlot = new Set();
-        let initialYieldForZero = interpolateYield(0);
-        if (initialYieldForZero === null && kbdYieldData.length > 0) {
-            initialYieldForZero = kbdYieldData[0].yield;
-        }
-        if (initialYieldForZero !== null) termsToPlot.add(0);
+        
+        // --- УДАЛЕН БЛОК, ДОБАВЛЯЮЩИЙ 0 В termsToPlot ---
+        // let initialBaseYieldForZero = interpolateValueFromTermData(0, kbdYieldData, 'yield');
+        // if (initialBaseYieldForZero === null && kbdYieldData.length > 0) {
+        //     initialBaseYieldForZero = kbdYieldData[0].yield;
+        // }
+        // if (initialBaseYieldForZero !== null) {
+        //     termsToPlot.add(0); // ЭТА СТРОКА УДАЛЕНА
+        // }
+        // --- КОНЕЦ УДАЛЕННОГО БЛОКА ---
+
 
         kbdYieldData.forEach(point => {
-            if (point.term <= selectedMaxTerm) termsToPlot.add(point.term);
+            if (point.term <= xAxisFixedMaxTerm) termsToPlot.add(point.term);
+        });
+        creditSpreadTermData.forEach(point => {
+            if (point.term <= xAxisFixedMaxTerm) termsToPlot.add(point.term);
         });
         Array.from(maturitySelect.options).forEach(option => {
-            const termValue = parseInt(option.value);
-            if (termValue <= selectedMaxTerm) termsToPlot.add(termValue);
+            const termValue = parseInt(option.value); // parseFloat если есть дробные значения в select
+            if (termValue <= xAxisFixedMaxTerm) termsToPlot.add(termValue);
         });
-        termsToPlot.add(selectedMaxTerm);
+        termsToPlot.add(xAxisFixedMaxTerm);
+        
         const sortedTerms = Array.from(termsToPlot).sort((a, b) => a - b);
 
         sortedTerms.forEach(term => {
-            if (term === 0 && labels.includes("0г")) return;
-            let baseYield = interpolateYield(term);
-            if (baseYield !== null) {
-                labels.push(term === 0 ? "0г" : `${term}г`);
+            // Логика для пропуска дубликата "0г" или специальной обработки term === 0
+            // теперь менее релевантна, т.к. 0 не должен попадать в sortedTerms.
+            // if (term === 0 && ...) return; // Можно упростить или удалить
+
+            let baseYield = interpolateValueFromTermData(term, kbdYieldData, 'yield');
+            let creditSpreadForTerm = interpolateValueFromTermData(term, creditSpreadTermData, 'spread');
+
+            if (baseYield !== null && creditSpreadForTerm !== null) {
+                // Поскольку 0 не будет в term, метка "0г" не будет создана.
+                labels.push(`${term}г`); // term === 0 ? "0г" : ... -> просто `${term}г`
                 baseYieldDataPoints.push(parseFloat(baseYield.toFixed(2)));
-                creditSpreadMagnitudePoints.push(parseFloat(fixedCreditSpreadValue.toFixed(2)));
-                liquidityPremiumMagnitudePoints.push(parseFloat(liquidityRiskPremiumValue.toFixed(2)));
+                creditSpreadMagnitudePoints.push(parseFloat(creditSpreadForTerm.toFixed(2)));
+                const currentLiquidityRiskPremium = discountRate * creditSpreadForTerm;
+                liquidityPremiumMagnitudePoints.push(parseFloat(currentLiquidityRiskPremium.toFixed(2)));
             }
         });
         
-        if (labels.length === 0 && selectedMaxTerm === 0) {
-            let yieldForZero = interpolateYield(0);
-            if (yieldForZero === null && kbdYieldData.length > 0) yieldForZero = kbdYieldData[0].yield;
-            if (yieldForZero !== null) {
-                labels.push("Тек.");
-                baseYieldDataPoints.push(parseFloat(yieldForZero.toFixed(2)));
-                creditSpreadMagnitudePoints.push(parseFloat(fixedCreditSpreadValue.toFixed(2)));
-                liquidityPremiumMagnitudePoints.push(parseFloat(liquidityRiskPremiumValue.toFixed(2)));
-            }
-        }
+        // Этот блок больше не должен срабатывать, т.к. sortedTerms[0] не будет 0.
+        // if (labels.length === 0 && sortedTerms.length === 1 && sortedTerms[0] === 0) {
+        //     ...
+        // }
 
         const colorBase = 'rgba(255, 150, 150';
         const colorCreditSpread = 'rgba(255, 180, 180';
         const colorLiquidity = 'rgba(255, 210, 210';
-
 
         return {
             labels: labels,
@@ -144,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 scales: {
                     y: {
                         stacked: true,
-                        beginAtZero: true,
+                        min: 14,
                         title: { display: true, text: 'Доходность (%)', color: '#495057' },
                         ticks: { color: '#495057', callback: function(value) { return value.toFixed(1) + '%'; } },
                         grid: { color: 'rgba(0, 0, 0, 0.08)', borderColor: 'rgba(0, 0, 0, 0.08)' }
@@ -174,8 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             },
                             footer: function(tooltipItems) {
                                 let sum = 0;
-                                for (const chart of tooltipItems[0].chart.data.datasets) {
-                                   sum += chart.data[tooltipItems[0].dataIndex];
+                                for (const dataset of tooltipItems[0].chart.data.datasets) {
+                                   sum += dataset.data[tooltipItems[0].dataIndex];
                                 }
                                 return 'Итого FTP: ' + sum.toFixed(2) + '%';
                             }
@@ -189,47 +221,13 @@ document.addEventListener('DOMContentLoaded', () => {
     plotButton.addEventListener('click', plotChart);
     maturitySelect.addEventListener('change', plotChart);
     securityTypeSelect.addEventListener('change', plotChart);
-    riskPremiumInput.addEventListener('change', plotChart);
-    plotChart();
+    plotChart(); // Initial plot
 
-    // --- Код для плавной анимации аккордеона ---
     const accordionItems = document.querySelectorAll('.risk-item');
-
     accordionItems.forEach(item => {
         const summary = item.querySelector('summary');
-        const content = item.querySelector('.risk-description');
-
         summary.addEventListener('click', (event) => {
-            // Стандартное поведение <details> само переключает атрибут [open]
-            // и CSS transition, основанный на этом атрибуте, должен сработать.
-            // Дополнительный JS для анимации высоты здесь может быть избыточен
-            // или конфликтовать с CSS-переходом для max-height.
-            // Проверим, работает ли чисто CSS-ный вариант.
-
-            // Если вам нужна более сложная анимация, не основанная только на max-height,
-            // тогда event.preventDefault() и JS-анимация будут нужны.
-            // Например, для анимации через requestAnimationFrame:
-
-            // if (item.open) { // Если details собирается закрыться (после клика)
-            //     event.preventDefault(); // Предотвращаем мгновенное закрытие
-            //     content.style.maxHeight = content.scrollHeight + 'px'; // Устанавливаем текущую высоту
-            //     requestAnimationFrame(() => { // В следующем кадре начинаем анимацию к нулю
-            //         content.style.maxHeight = '0px';
-            //         content.style.paddingTop = '0px';
-            //         content.style.paddingBottom = '0px';
-            //         content.style.opacity = '0';
-            //     });
-            //     content.addEventListener('transitionend', () => {
-            //         item.removeAttribute('open'); // Убираем атрибут open после анимации
-            //         content.style.maxHeight = null; // Сбрасываем стили
-            //         content.style.paddingTop = null;
-            //         content.style.paddingBottom = null;
-            //         content.style.opacity = null;
-            //     }, { once: true });
-            // } else { // Если details собирается открыться
-            //     // Стандартное поведение откроет и CSS transition сработает
-            //     // Можно добавить класс для блокировки, если анимация долгая
-            // }
+            // CSS transitions handle the animation
         });
     });
 });
