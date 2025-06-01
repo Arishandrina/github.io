@@ -263,7 +263,7 @@ button#plot-button:hover {
 .chart-container {
     position: relative;
     height: 400px;
-    padding: 10px;
+    padding: 10px; /* Оставляем для десктопа */
     border-radius: 4px;
 }
 
@@ -292,30 +292,21 @@ footer p {
     header {
         padding: 10px 0;
     }
-    .header-content {
-        /* flex-direction: column; БЫЛО - УДАЛЕНО */
-        /* align-items: stretch; БЫЛО - УДАЛЕНО */
-        /* Наследует display: flex; justify-content: space-between; align-items: center; */
-    }
-    .logo-area {
-        /* margin-bottom: 10px; БЫЛО - УДАЛЕНО */
-        /* justify-content: center; БЫЛО - УДАЛЕНО */
-        /* По умолчанию будет слева */
-    }
+    /* .header-content остается с display: flex; justify-content: space-between; align-items: center; */
+    
+    /* .logo-area остается без изменений */
+
     .page-title-area {
-        /* text-align: center; БЫЛО - УДАЛЕНО */ /* Можно оставить, если нужно, чтобы .page-title-area занимала доступное место */
-        padding-bottom: 6px; /* Можно немного уменьшить, если нужно больше места по вертикали */
+        padding-bottom: 6px; 
     }
     .page-title-area h1 {
-        font-size: 1.1em;
-        text-align: right; /* ИЗМЕНЕНО с center на right */
+        font-size: 1.1em; /* Можно сделать чуть меньше, если заголовок длинный */
+        text-align: right; 
         padding-bottom: 4px;
     }
     .page-title-area::after {
-        /* left: 50%; БЫЛО - УДАЛЕНО */
-        /* transform: translateX(-50%); БЫЛО - УДАЛЕНО */
-        right: 0; /* ДОБАВЛЕНО */
-        width: 100%;  /* ИЗМЕНЕНО с 40% на 100% (относительно .page-title-area) */
+        right: 0; 
+        width: 100%;
         height: 2px;
     }
     .container {
@@ -333,6 +324,7 @@ footer p {
     }
     .chart-container {
         height: 300px;
+        padding: 0; /* Убираем padding для мобильных, чтобы график занял всю ширину */
     }
     .logo-moex-shape {
         width: 52px;
