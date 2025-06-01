@@ -318,7 +318,10 @@ footer p {
     }
 
     #chart-section.card { 
-        padding: 15px 0 15px 0; /* Отступы только сверху и снизу, слева и справа 0 */
+        padding-left: 15px;   /* Возвращаем левый отступ, как у других карточек */
+        padding-right: 0;     /* Правый отступ остается 0, чтобы график мог растянуться */
+        padding-top: 15px;    
+        padding-bottom: 15px; 
     }
 
     .control-grid {
