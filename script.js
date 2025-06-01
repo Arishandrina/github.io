@@ -39,20 +39,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function interpolateValueFromTermData(targetTerm, termDataArray, valueKey) {
         if (termDataArray.length === 0) return null;
-        // If targetTerm is at or before the first known term, use the first term's value
         if (targetTerm <= termDataArray[0].term) return termDataArray[0][valueKey];
-        // If targetTerm is at or after the last known term, use the last term's value
         if (targetTerm >= termDataArray[termDataArray.length - 1].term) return termDataArray[termDataArray.length - 1][valueKey];
 
         let lowerBound = null, upperBound = null;
         for (let i = 0; i < termDataArray.length; i++) {
-            if (termDataArray[i].term === targetTerm) return termDataArray[i][valueKey]; // Exact match
+            if (termDataArray[i].term === targetTerm) return termDataArray[i][valueKey];
             if (termDataArray[i].term < targetTerm) {
                 lowerBound = termDataArray[i];
             }
             if (termDataArray[i].term > targetTerm && lowerBound) {
                 upperBound = termDataArray[i];
-                break; // Found bracketing points
+                break;
             }
         }
         if (lowerBound && upperBound) {
@@ -60,11 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const x2 = upperBound.term, y2 = upperBound[valueKey];
             return y1 + (targetTerm - x1) * (y2 - y1) / (x2 - x1);
         }
-        return null; // Should ideally not be reached if data covers the range
+        return null;
     }
 
     function generateChartData() {
-        const xAxisFixedMaxTerm = 30;
+        // Используем значение из maturitySelect для определения максимального срока на графике
+        const selectedMaxTerm = parseFloat(maturitySelect.value);
         const selectedSecurityType = securityTypeSelect.value;
         const discountRate = securityTypeDiscounts[selectedSecurityType] || 0;
 
@@ -74,43 +73,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const liquidityPremiumMagnitudePoints = [];
 
         let termsToPlot = new Set();
-        
-        // --- УДАЛЕН БЛОК, ДОБАВЛЯЮЩИЙ 0 В termsToPlot ---
-        // let initialBaseYieldForZero = interpolateValueFromTermData(0, kbdYieldData, 'yield');
-        // if (initialBaseYieldForZero === null && kbdYieldData.length > 0) {
-        //     initialBaseYieldForZero = kbdYieldData[0].yield;
-        // }
-        // if (initialBaseYieldForZero !== null) {
-        //     termsToPlot.add(0); // ЭТА СТРОКА УДАЛЕНА
-        // }
-        // --- КОНЕЦ УДАЛЕННОГО БЛОКА ---
 
-
+        // Собираем точки для графика до selectedMaxTerm
         kbdYieldData.forEach(point => {
-            if (point.term <= xAxisFixedMaxTerm) termsToPlot.add(point.term);
+            if (point.term <= selectedMaxTerm) termsToPlot.add(point.term);
         });
         creditSpreadTermData.forEach(point => {
-            if (point.term <= xAxisFixedMaxTerm) termsToPlot.add(point.term);
+            if (point.term <= selectedMaxTerm) termsToPlot.add(point.term);
         });
+
+        // Добавляем все опции из maturitySelect, которые меньше или равны selectedMaxTerm,
+        // чтобы обеспечить наличие этих точек на графике для интерполяции и детализации.
         Array.from(maturitySelect.options).forEach(option => {
-            const termValue = parseInt(option.value); // parseFloat если есть дробные значения в select
-            if (termValue <= xAxisFixedMaxTerm) termsToPlot.add(termValue);
+            const termValue = parseFloat(option.value);
+            if (termValue <= selectedMaxTerm) {
+                termsToPlot.add(termValue);
+            }
         });
-        termsToPlot.add(xAxisFixedMaxTerm);
+        // Всегда добавляем сам selectedMaxTerm, чтобы график гарантированно доходил до этой точки
+        termsToPlot.add(selectedMaxTerm);
         
         const sortedTerms = Array.from(termsToPlot).sort((a, b) => a - b);
 
         sortedTerms.forEach(term => {
-            // Логика для пропуска дубликата "0г" или специальной обработки term === 0
-            // теперь менее релевантна, т.к. 0 не должен попадать в sortedTerms.
-            // if (term === 0 && ...) return; // Можно упростить или удалить
-
             let baseYield = interpolateValueFromTermData(term, kbdYieldData, 'yield');
             let creditSpreadForTerm = interpolateValueFromTermData(term, creditSpreadTermData, 'spread');
 
             if (baseYield !== null && creditSpreadForTerm !== null) {
-                // Поскольку 0 не будет в term, метка "0г" не будет создана.
-                labels.push(`${term}г`); // term === 0 ? "0г" : ... -> просто `${term}г`
+                labels.push(`${term}г`);
                 baseYieldDataPoints.push(parseFloat(baseYield.toFixed(2)));
                 creditSpreadMagnitudePoints.push(parseFloat(creditSpreadForTerm.toFixed(2)));
                 const currentLiquidityRiskPremium = discountRate * creditSpreadForTerm;
@@ -118,11 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Этот блок больше не должен срабатывать, т.к. sortedTerms[0] не будет 0.
-        // if (labels.length === 0 && sortedTerms.length === 1 && sortedTerms[0] === 0) {
-        //     ...
-        // }
-
         const colorBase = 'rgba(255, 150, 150';
         const colorCreditSpread = 'rgba(255, 180, 180';
         const colorLiquidity = 'rgba(255, 210, 210';
@@ -176,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 scales: {
                     y: {
                         stacked: true,
-                        min: 14,
+                        min: 10,
                         title: { display: true, text: 'Доходность (%)', color: '#495057' },
                         ticks: { color: '#495057', callback: function(value) { return value.toFixed(1) + '%'; } },
                         grid: { color: 'rgba(0, 0, 0, 0.08)', borderColor: 'rgba(0, 0, 0, 0.08)' }
@@ -219,9 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     plotButton.addEventListener('click', plotChart);
-    maturitySelect.addEventListener('change', plotChart);
-    securityTypeSelect.addEventListener('change', plotChart);
-    plotChart(); // Initial plot
+    plotChart(); // Первоначальная отрисовка графика при загрузке страницы
 
     const accordionItems = document.querySelectorAll('.risk-item');
     accordionItems.forEach(item => {
