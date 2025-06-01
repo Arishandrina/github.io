@@ -169,19 +169,16 @@ h2 {
 .risk-item[open] summary .accordion-icon.plus,
 .risk-item[open] summary .accordion-icon.minus { /* Если нужны разные иконки */
     color: #E6332A;
-    /* transform: rotate(45deg); /* Пример поворота для плюса в крестик */
 }
 
 
 .risk-description {
-    /* Начальное состояние для анимации */
     max-height: 0;
     overflow: hidden;
-    padding-top: 0; /* Убираем верхний padding, когда скрыто */
-    padding-bottom: 0; /* Убираем нижний padding, когда скрыто */
+    padding-top: 0; 
+    padding-bottom: 0; 
     opacity: 0;
     transition: max-height 0.4s ease-out, padding-top 0.4s ease-out, padding-bottom 0.4s ease-out, opacity 0.3s 0.1s ease-out;
-    /* Добавляем отступ слева, как и раньше */
     padding-left: 28px;
     color: #555;
     font-size: 0.95em;
@@ -189,10 +186,9 @@ h2 {
 }
 
 .risk-item[open] .risk-description {
-    /* Конечное состояние для анимации */
-    max-height: 500px; /* Достаточно большая высота для любого контента */
-    padding-top: 5px;   /* Возвращаем верхний padding */
-    padding-bottom: 15px; /* Возвращаем нижний padding */
+    max-height: 500px; 
+    padding-top: 5px;   
+    padding-bottom: 15px; 
     opacity: 1;
     transition: max-height 0.5s ease-in, padding-top 0.5s ease-in, padding-bottom 0.5s ease-in, opacity 0.3s ease-in;
 }
@@ -263,7 +259,7 @@ button#plot-button:hover {
 .chart-container {
     position: relative;
     height: 400px;
-    padding: 10px; /* Оставляем для десктопа */
+    padding: 10px; 
     border-radius: 4px;
 }
 
@@ -292,15 +288,12 @@ footer p {
     header {
         padding: 10px 0;
     }
-    /* .header-content остается с display: flex; justify-content: space-between; align-items: center; */
     
-    /* .logo-area остается без изменений */
-
     .page-title-area {
         padding-bottom: 6px; 
     }
     .page-title-area h1 {
-        font-size: 1.1em; /* Можно сделать чуть меньше, если заголовок длинный */
+        font-size: 1.1em; 
         text-align: right; 
         padding-bottom: 4px;
     }
@@ -312,9 +305,17 @@ footer p {
     .container {
         width: 95%;
     }
-    .card {
+    .card { /* Общие отступы для карточек на мобильных */
         padding: 20px;
     }
+
+    #chart-section.card { /* Специальные отступы для карточки с графиком на мобильных */
+        padding-left: 0;   /* Убираем левый отступ */
+        padding-right: 0;  /* Убираем правый отступ */
+        padding-top: 20px;    /* Оставляем верхний отступ для заголовка */
+        padding-bottom: 20px; /* Оставляем нижний отступ */
+    }
+
     .control-grid {
         grid-template-columns: 1fr;
     }
@@ -324,7 +325,7 @@ footer p {
     }
     .chart-container {
         height: 300px;
-        padding: 0; /* Убираем padding для мобильных, чтобы график занял всю ширину */
+        padding: 0; /* Убираем padding для контейнера графика на мобильных */
     }
     .logo-moex-shape {
         width: 52px;
