@@ -62,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function generateChartData() {
-        // Используем значение из maturitySelect для определения максимального срока на графике
         const selectedMaxTerm = parseFloat(maturitySelect.value);
         const selectedSecurityType = securityTypeSelect.value;
         const discountRate = securityTypeDiscounts[selectedSecurityType] || 0;
@@ -74,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let termsToPlot = new Set();
 
-        // Собираем точки для графика до selectedMaxTerm
         kbdYieldData.forEach(point => {
             if (point.term <= selectedMaxTerm) termsToPlot.add(point.term);
         });
@@ -82,15 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (point.term <= selectedMaxTerm) termsToPlot.add(point.term);
         });
 
-        // Добавляем все опции из maturitySelect, которые меньше или равны selectedMaxTerm,
-        // чтобы обеспечить наличие этих точек на графике для интерполяции и детализации.
         Array.from(maturitySelect.options).forEach(option => {
             const termValue = parseFloat(option.value);
             if (termValue <= selectedMaxTerm) {
                 termsToPlot.add(termValue);
             }
         });
-        // Всегда добавляем сам selectedMaxTerm, чтобы график гарантированно доходил до этой точки
         termsToPlot.add(selectedMaxTerm);
         
         const sortedTerms = Array.from(termsToPlot).sort((a, b) => a - b);
@@ -213,4 +208,27 @@ document.addEventListener('DOMContentLoaded', () => {
             // CSS transitions handle the animation
         });
     });
+
+    // --- КОД ДЛЯ КОРРЕКТНОЙ РАБОТЫ ТУЛТИПА НА МОБИЛЬНЫХ ---
+    function hideActiveChartTooltip() {
+        if (ftpChart && ftpChart.tooltip && ftpChart.getActiveElements().length > 0) {
+            ftpChart.tooltip.setActiveElements([], { x: 0, y: 0 });
+            ftpChart.update('none'); 
+        }
+    }
+
+    window.addEventListener('scroll', hideActiveChartTooltip, true); 
+
+    document.addEventListener('click', function(event) {
+        if (ftpChart && ftpChart.canvas) {
+            const canvas = ftpChart.canvas;
+            const isClickInsideCanvas = canvas.contains(event.target);
+            
+            if (!isClickInsideCanvas && ftpChart.getActiveElements().length > 0) {
+                hideActiveChartTooltip();
+            }
+        }
+    }, true); 
+    // --- КОНЕЦ КОДА ДЛЯ КОРРЕКТНОЙ РАБОТЫ ТУЛТИПА НА МОБИЛЬНЫХ ---
+
 });
