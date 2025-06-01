@@ -134,17 +134,17 @@ h2 {
     font-weight: 500;
     color: #333;
     cursor: pointer;
-    list-style: none; /* Убираем стандартный маркер details */
+    list-style: none; 
     display: flex;
     align-items: center;
-    transition: color 0.3s ease; /* Плавное изменение цвета текста */
-    position: relative; /* Для ::before псевдоэлемента, если он будет */
+    transition: color 0.3s ease; 
+    position: relative; 
 }
 
-.risk-item summary::-webkit-details-marker { /* Убираем стандартный маркер для Chrome/Safari */
+.risk-item summary::-webkit-details-marker { 
     display: none;
 }
-.risk-item summary::marker { /* Убираем стандартный маркер для Firefox */
+.risk-item summary::marker { 
     display: none;
 }
 
@@ -155,19 +155,18 @@ h2 {
     font-weight: normal;
     width: 1em;
     text-align: center;
-    transition: transform 0.3s ease, color 0.3s ease; /* Плавный поворот иконки и цвет */
+    transition: transform 0.3s ease, color 0.3s ease; 
 }
 
 .risk-item .minus { display: none; }
 .risk-item[open] .plus { display: none; }
 .risk-item[open] .minus { display: inline; }
 
-/* Стили для открытого состояния */
 .risk-item[open] summary {
-    color: #E6332A; /* Красный цвет текста для активного заголовка */
+    color: #E6332A; 
 }
 .risk-item[open] summary .accordion-icon.plus,
-.risk-item[open] summary .accordion-icon.minus { /* Если нужны разные иконки */
+.risk-item[open] summary .accordion-icon.minus { 
     color: #E6332A;
 }
 
@@ -257,14 +256,20 @@ button#plot-button:hover {
 }
 
 .chart-container {
-    position: relative;
-    height: 400px;
-    padding: 10px; 
+    position: relative; /* Важно для Chart.js */
+    width: 100%;      /* Занимает всю ширину родителя */
+    height: 400px;    /* Высота для десктопа */
+    /* padding: 10px;  Убрано, если хотим, чтобы canvas прилегал к краям */
     border-radius: 4px;
+    box-sizing: border-box; /* Чтобы padding не влиял на общую ширину/высоту */
 }
 
 canvas#ftpChart {
     background-color: #FFFFFF;
+    display: block; /* Убирает лишнее пространство под canvas */
+    width: 100% !important;  /* Принудительно растягиваем canvas */
+    height: 100% !important; /* Принудительно растягиваем canvas */
+    box-sizing: border-box;
 }
 
 footer {
@@ -303,17 +308,17 @@ footer p {
         height: 2px;
     }
     .container {
-        width: 95%;
+        width: 100%; /* Занимает всю ширину экрана */
+        padding: 0 5px; /* Маленькие отступы по бокам для всего контента */
+        box-sizing: border-box;
     }
-    .card { /* Общие отступы для карточек на мобильных */
-        padding: 20px;
+    .card { 
+        padding: 15px; /* Уменьшаем общие отступы для карточек */
+        margin-bottom: 20px; /* Уменьшаем нижний отступ */
     }
 
-    #chart-section.card { /* Специальные отступы для карточки с графиком на мобильных */
-        padding-left: 0;   /* Убираем левый отступ */
-        padding-right: 0;  /* Убираем правый отступ */
-        padding-top: 20px;    /* Оставляем верхний отступ для заголовка */
-        padding-bottom: 20px; /* Оставляем нижний отступ */
+    #chart-section.card { 
+        padding: 15px 0 15px 0; /* Отступы только сверху и снизу, слева и справа 0 */
     }
 
     .control-grid {
@@ -324,9 +329,11 @@ footer p {
         font-size: 1em;
     }
     .chart-container {
-        height: 300px;
-        padding: 0; /* Убираем padding для контейнера графика на мобильных */
+        height: 300px; /* Высота для мобильных */
+        /* padding: 0; - уже было установлено */
     }
+    /* canvas#ftpChart стили width: 100% !important; height: 100% !important; уже применены глобально */
+
     .logo-moex-shape {
         width: 52px;
         height: 30px;
